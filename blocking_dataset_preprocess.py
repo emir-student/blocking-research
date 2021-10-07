@@ -51,3 +51,7 @@ print(df.describe())
 
 sns.lineplot(x='blocking_year',y='block_intensity',data=df)
 plt.savefig('plot0.png')
+
+
+
+
