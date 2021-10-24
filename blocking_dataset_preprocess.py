@@ -1,6 +1,7 @@
 import pandas as pd 
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os 
 
 df=pd.read_excel("blocknh.xlsx", sheet_name=0, header=0, usecols=list(range(1,13+1))) 
 #Gave the columns names
@@ -38,11 +39,14 @@ df['blocking_year'] = df['blocking_year'].astype("int")
 df["blocking_year"] = df["blocking_year"].replace(to_replace=2105, value=2015) 
 
 
-df=df[df['longitude_onset']<=-45]
+df=df[df['longitude_onset']<=40] 
 df=df[df['longitude_onset']>=-170]
 
 df=df[df['latitude_onset']<=75]
 df=df[df['latitude_onset']>=15]
+
+path= '/home/emirs/blocking-research/'
+df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'))
 
 pd.set_option('display.max_columns', None)
 print(df)
@@ -51,7 +55,5 @@ print(df.describe())
 
 sns.lineplot(x='blocking_year',y='block_intensity',data=df)
 plt.savefig('plot0.png')
-
-
 
 
