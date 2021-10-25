@@ -1,7 +1,8 @@
-import pandas as pd 
+import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os 
+import os
 
 df=pd.read_excel("blocknh.xlsx", sheet_name=0, header=0, usecols=list(range(1,13+1))) 
 #Gave the columns names
@@ -45,8 +46,11 @@ df=df[df['longitude_onset']>=-170]
 df=df[df['latitude_onset']<=75]
 df=df[df['latitude_onset']>=15]
 
-path= '/home/emirs/blocking-research/'
-df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'))
+df = df.sort_values(by=['blocking_year', 'month', 'day_begin'])
+df['event_id'] = np.asarray(range(len(df.index)))
+
+path='/home/emirs/blocking-research/'
+df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'),index=False)
 
 pd.set_option('display.max_columns', None)
 print(df)
@@ -55,15 +59,4 @@ print(df.describe())
 
 sns.lineplot(x='blocking_year',y='block_intensity',data=df)
 plt.savefig('plot0.png')
-
-path="/home/emirs/blocking-research/preprocessed_blocking_data.csv"
-
-#Adds a column to csv with year, month, and day combined into a date. 
-df = pd.read_csv(path,
-                 parse_dates= {"date_begin" : ["blocking_year","month","day_begin","time_begin"]},
-                keep_date_col=True)
-
-path= "/home/emirs/blocking-research/"
-df.to_csv(os.path.join(path,r'blocking_data_with_dates.csv'))
-
 

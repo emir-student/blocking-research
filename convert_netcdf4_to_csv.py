@@ -1,4 +1,4 @@
-import netCDF4 as nc 
+import netCDF4 as n
 import numpy as np
 import pandas as pd
 import os
@@ -13,7 +13,7 @@ times = num2date(time_var[:], time_var.units)
 latitudes = f.variables[lat_dim.name][:]
 longitudes = f.variables[lon_dim.name][:]
 levels= f.variables[level_dim.name][:]
- 
+
 output_dir = './'
 
 filename = os.path.join(output_dir, 'table.csv')
