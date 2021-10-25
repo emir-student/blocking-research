@@ -60,7 +60,7 @@ path="/home/emirs/blocking-research/preprocessed_blocking_data.csv"
 
 #Adds a column to csv with year, month, and day combined into a date. 
 df = pd.read_csv(path,
-                 parse_dates= {"date_begin" : ["blocking_year","month","day_begin"]},
+                 parse_dates= {"date_begin" : ["blocking_year","month","day_begin","time_begin"]},
                 keep_date_col=True)
 
 path= "/home/emirs/blocking-research/"
