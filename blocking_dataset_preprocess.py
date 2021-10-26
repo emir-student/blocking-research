@@ -39,12 +39,18 @@ df['blocking_year'] = df['blocking_year'].astype("int")
 #Fixed a typo in the Excel sheet where the year was recorded as 2105 instead of 2015. 
 df["blocking_year"] = df["blocking_year"].replace(to_replace=2105, value=2015) 
 
+df = df [(df['blocking_year'] != 1981) & (df['month'] !=6) & (df['day_begin'] != 31) ]
+df = df [(df['blocking_year'] != 1992) & (df['month'] !=2) & (df['day_begin'] != 30) ] 
+
 
 df=df[df['longitude_onset']<=40] 
 df=df[df['longitude_onset']>=-170]
 
 df=df[df['latitude_onset']<=75]
 df=df[df['latitude_onset']>=15]
+
+#Filters out years before 1979.
+df=df[df['blocking_year']>=1979]
 
 df = df.sort_values(by=['blocking_year', 'month', 'day_begin'])
 df['event_id'] = np.asarray(range(len(df.index)))
