@@ -8,7 +8,7 @@ import datetime
 df=pd.read_csv('./preprocessed_blocking_data.csv')
 
 # make new folder called reanalysis_data_processed
-os.makedirs('./reanalysis_data_processed',exist_ok=True)
+os.makedirs('./reanalysis_data_processed', exist_ok=True)
 
 for index, row in df.iterrows():
     year = int(row["blocking_year"])
