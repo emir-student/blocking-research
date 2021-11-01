@@ -2,21 +2,32 @@ import numpy as np
 import pandas as pd
 from skimage.feature import hog
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVR
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import PowerTransformer
+from sklearn.preprocessing import MaxAbsScaler
+
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.svm import SVR
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+
+from sklearn.metrics import mean_absolute_error as MAE 
 
 df = pd.read_csv('./preprocessed_blocking_data.csv')
 
 event_ids = df['event_id'].to_numpy()
-y_block_intensity = df['block_intensity'].to_numpy()
+y_data = df['length_days'].to_numpy() 
 
 x_reanalysis_data = []
 
 print("Loading reanalysis data...")
 for event_id in event_ids:
-    # print(f"loading reanalysis data: {event_id}")
     event_array = np.load(f"./reanalysis_data_processed/{event_id}.npy")
     x_reanalysis_data.append(event_array)
 
@@ -32,7 +43,7 @@ x_reanalysis_data_hog = []
 for i in range(x_reanalysis_data_500_mb.shape[0]):
     # print(f"extracting hog features: {event_ids[i]}")
     event_image = x_reanalysis_data_500_mb[i,:,:]
-    event_image_hog = hog(event_image, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(7, 7), block_norm='L2-Hys', feature_vector=True)
+    event_image_hog = hog(event_image, orientations=8, pixels_per_cell=(16,16), cells_per_block=(3,3), block_norm='L2-Hys', feature_vector=True)
     x_reanalysis_data_hog.append(event_image_hog)
 
 x_reanalysis_data_hog = np.array(x_reanalysis_data_hog)
@@ -45,7 +56,7 @@ HOG_FEATURE_SIZE = x_reanalysis_data_hog.shape[1]
 
 event_ids_train, event_ids_test, \
 x_reanalysis_data_hog_train, x_reanalysis_data_hog_test, \
-y_block_intensity_train, y_block_intensity_test = train_test_split(event_ids, x_reanalysis_data_hog, y_block_intensity, test_size=0.3, random_state=0)
+y_data_train, y_data_test = train_test_split(event_ids, x_reanalysis_data_hog, y_data, test_size=0.3, random_state=0)
 
 print(f"event_ids_train: {event_ids_train.shape}")
 print(f"event_ids_test: {event_ids_test.shape}")
@@ -53,20 +64,36 @@ print(f"event_ids_test: {event_ids_test.shape}")
 print(f"x_reanalysis_data_hog_train: {x_reanalysis_data_hog_train.shape}")
 print(f"x_reanalysis_data_hog_test: {x_reanalysis_data_hog_test.shape}")
 
-print(f"y_block_intensity_train: {y_block_intensity_train.shape}")
-print(f"y_block_intensity_test: {y_block_intensity_test.shape}")
+print(f"y_block_intensity_train: {y_data_train.shape}")
+print(f"y_block_intensity_test: {y_data_test.shape}")
 
-min_max_scaler = RobustScaler()
-min_max_scaler.fit(x_reanalysis_data_hog_train)
+scaler= RobustScaler()
+scaler.fit(x_reanalysis_data_hog_train)
 
-x_reanalysis_data_hog_train_scaled = min_max_scaler.transform(x_reanalysis_data_hog_train)
-x_reanalysis_data_hog_test_scaled = min_max_scaler.transform(x_reanalysis_data_hog_test)
+x_reanalysis_data_hog_train_scaled = scaler.transform(x_reanalysis_data_hog_train)
+x_reanalysis_data_hog_test_scaled = scaler.transform(x_reanalysis_data_hog_test)
 
-# model = SVR(kernel='rbf')
-model = GradientBoostingRegressor(verbose=11, random_state=0)
-model.fit(x_reanalysis_data_hog_train_scaled, y_block_intensity_train)
-r2_train = model.score(x_reanalysis_data_hog_train_scaled, y_block_intensity_train)
-r2_test = model.score(x_reanalysis_data_hog_test_scaled, y_block_intensity_test)
+
+#model = LinearRegression()
+#model = Ridge(alpha=1, random_state=0)
+#model = Lasso(alpha=1, random_state=0)
+#model = SVR(kernel='rbf')
+#model = GradientBoostingRegressor(random_state=0)       # Each tree feeds into the next, hoping to improve results. 
+model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
+
+
+model.fit(x_reanalysis_data_hog_train_scaled, y_data_train)
+r2_train = model.score(x_reanalysis_data_hog_train_scaled, y_data_train)
+r2_test = model.score(x_reanalysis_data_hog_test_scaled, y_data_test)
 
 print(f"r2_train: {r2_train}")
 print(f"r2_test: {r2_test}")
+
+y_train_predicted = model.predict(x_reanalysis_data_hog_train_scaled)
+y_test_predicted = model.predict(x_reanalysis_data_hog_test_scaled)
+
+mae_train = MAE(y_train_predicted, y_data_train)
+mae_test= MAE(y_test_predicted, y_data_test)
+
+print(f"MAE Train: {mae_train}")
+print(f"MAE Test: {mae_test}")

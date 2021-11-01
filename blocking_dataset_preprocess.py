@@ -63,6 +63,14 @@ print(df)
 print(df.info())
 print(df.describe())
 
-sns.lineplot(x='blocking_year',y='block_intensity',data=df)
-plt.savefig('plot0.png')
+#sns.lineplot(x='blocking_year',y='block_intensity',data=df)
+#plt.savefig('plot0.png')
+
+#sns.lineplot(x='blocking_year',y='length_days',data=df)
+#plt.savefig('plot1.png')
+
+sns.lineplot(x='latitude_onset',y='block_intensity',data=df)
+plt.savefig('plot2.png')
+
+#Make one for duration vs year
 
