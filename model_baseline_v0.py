@@ -17,12 +17,17 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 
+from sklearn.neural_network import MLPRegressor 
+
 from sklearn.metrics import mean_absolute_error as MAE 
+
+import matplotlib.pyplot as plt
+import seaborn as sns 
 
 df = pd.read_csv('./preprocessed_blocking_data.csv')
 
 event_ids = df['event_id'].to_numpy()
-y_data = df['length_days'].to_numpy() 
+y_data = df['block_intensity'].to_numpy() 
 
 x_reanalysis_data = []
 
@@ -64,8 +69,8 @@ print(f"event_ids_test: {event_ids_test.shape}")
 print(f"x_reanalysis_data_hog_train: {x_reanalysis_data_hog_train.shape}")
 print(f"x_reanalysis_data_hog_test: {x_reanalysis_data_hog_test.shape}")
 
-print(f"y_block_intensity_train: {y_data_train.shape}")
-print(f"y_block_intensity_test: {y_data_test.shape}")
+print(f"y_train: {y_data_train.shape}")
+print(f"y_test: {y_data_test.shape}")
 
 scaler= RobustScaler()
 scaler.fit(x_reanalysis_data_hog_train)
@@ -79,7 +84,16 @@ x_reanalysis_data_hog_test_scaled = scaler.transform(x_reanalysis_data_hog_test)
 #model = Lasso(alpha=1, random_state=0)
 #model = SVR(kernel='rbf')
 #model = GradientBoostingRegressor(random_state=0)       # Each tree feeds into the next, hoping to improve results. 
-model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
+#model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
+
+model=MLPRegressor(hidden_layer_sizes=(256,128,64),
+                   activation='relu',
+                   solver='adam',
+                   batch_size=128,
+                   learning_rate_init=1e-3,
+                   max_iter=200,
+                   verbose=True,
+                   alpha=1e-3)
 
 
 model.fit(x_reanalysis_data_hog_train_scaled, y_data_train)
@@ -93,7 +107,13 @@ y_train_predicted = model.predict(x_reanalysis_data_hog_train_scaled)
 y_test_predicted = model.predict(x_reanalysis_data_hog_test_scaled)
 
 mae_train = MAE(y_train_predicted, y_data_train)
-mae_test= MAE(y_test_predicted, y_data_test)
+mae_test = MAE(y_test_predicted, y_data_test)
 
 print(f"MAE Train: {mae_train}")
 print(f"MAE Test: {mae_test}")
+
+error_train= y_train_predicted - y_data_train 
+error_test= y_test_predicted - y_data_test
+
+sns.displot([error_train,error_test], kind='kde')
+plt.savefig('model_error.png')
