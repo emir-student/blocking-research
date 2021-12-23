@@ -79,21 +79,21 @@ x_reanalysis_data_hog_train_scaled = scaler.transform(x_reanalysis_data_hog_trai
 x_reanalysis_data_hog_test_scaled = scaler.transform(x_reanalysis_data_hog_test)
 
 
-#model = LinearRegression()
+model = LinearRegression()
 #model = Ridge(alpha=1, random_state=0)
 #model = Lasso(alpha=1, random_state=0)
 #model = SVR(kernel='rbf')
-#model = GradientBoostingRegressor(random_state=0)       # Each tree feeds into the next, hoping to improve results. 
+# model = GradientBoostingRegressor(random_state=0)       # Each tree feeds into the next, hoping to improve results. 
 #model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
 
-model=MLPRegressor(hidden_layer_sizes=(256,128,64),
-                   activation='relu',
-                   solver='adam',
-                   batch_size=128,
-                   learning_rate_init=1e-3,
-                   max_iter=200,
-                   verbose=True,
-                   alpha=1e-3)
+# model=MLPRegressor(hidden_layer_sizes=(256,128,64),
+#                    activation='relu',
+#                    solver='adam',
+#                    batch_size=128,
+#                    learning_rate_init=1e-3,
+#                    max_iter=200,
+#                    verbose=True,
+#                    alpha=1e-3)
 
 
 model.fit(x_reanalysis_data_hog_train_scaled, y_data_train)

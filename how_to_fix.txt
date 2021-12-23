@@ -1,3 +1,5 @@
 -Find new way to process image using CNN
 
-
+-Batch normalization layer
+-Dropout layer(randomly zeroes out some % of connections)
+-Weight regularization?(Maybe)

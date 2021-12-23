@@ -43,11 +43,17 @@ df = df [(df['blocking_year'] != 1981) & (df['month'] !=6) & (df['day_begin'] !=
 df = df [(df['blocking_year'] != 1992) & (df['month'] !=2) & (df['day_begin'] != 30) ] 
 
 
-df=df[df['longitude_onset']<=40] 
-df=df[df['longitude_onset']>=-170]
+#df=df[df['longitude_onset']<=40] 
+#df=df[df['longitude_onset']>=-170]
 
-df=df[df['latitude_onset']<=75]
+#df=df[df['latitude_onset']<=75]
 df=df[df['latitude_onset']>=15]
+
+# July 1970 - June 1971 -> 1970
+# Jan (1) - June (6) not correct, add 1 from year
+
+month_fix_index = (df["month"] >= 1) & (df["month"] <= 6)
+df[month_fix_index]["blocking_year"] = df[month_fix_index]["blocking_year"]+1
 
 #Filters out years before 1979.
 df=df[df['blocking_year']>=1979]
