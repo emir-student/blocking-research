@@ -52,8 +52,11 @@ df=df[df['latitude_onset']>=15]
 # July 1970 - June 1971 -> 1970
 # Jan (1) - June (6) not correct, add 1 from year
 
+pd.set_option('display.max_rows', 30)
+
 month_fix_index = (df["month"] >= 1) & (df["month"] <= 6)
-df[month_fix_index]["blocking_year"] = df[month_fix_index]["blocking_year"]+1
+# df[month_fix_index]["blocking_year"] = df[month_fix_index]["blocking_year"]+1
+df.loc[month_fix_index, "blocking_year"] = df[month_fix_index]["blocking_year"]+1
 
 #Filters out years before 1979.
 df=df[df['blocking_year']>=1979]
@@ -65,9 +68,9 @@ path='/home/emirs/blocking-research/'
 df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'),index=False)
 
 pd.set_option('display.max_columns', None)
-print(df)
-print(df.info())
-print(df.describe())
+# print(df)
+# print(df.info())
+# print(df.describe())
 
 #sns.lineplot(x='blocking_year',y='block_intensity',data=df)
 #plt.savefig('plot0.png')
