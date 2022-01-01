@@ -3,6 +3,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from datetime import datetime
+from datetime import timedelta
 
 df=pd.read_excel("blocknh.xlsx", sheet_name=0, header=0, usecols=list(range(1,13+1))) 
 #Gave the columns names
@@ -35,6 +37,7 @@ df['day_end'] = df['day_end'].astype("int")
 df['season'] = df['season'].astype("int")
 df['month'] = df['month'].astype("int")
 df['blocking_year'] = df['blocking_year'].astype("int")
+#df['length_days'] = df['length_days'].astype("int")
 
 #Fixed a typo in the Excel sheet where the year was recorded as 2105 instead of 2015. 
 df["blocking_year"] = df["blocking_year"].replace(to_replace=2105, value=2015) 
@@ -64,13 +67,23 @@ df=df[df['blocking_year']>=1979]
 df = df.sort_values(by=['blocking_year', 'month', 'day_begin'])
 df['event_id'] = np.asarray(range(len(df.index)))
 
+date_cols = ["blocking_year",'month','day_begin']
+df['date_begin'] = df[date_cols].apply(lambda x: '-'.join(x.values.astype(str)), axis="columns")
+df['date_begin'] = pd.to_datetime(df["date_begin"])
+
+for i in df.index:
+    df.loc[i, 'date_end'] = df.loc[i,'date_begin'] + timedelta(days=df.loc[i,'length_days'])
+
+df['date_end'] = pd.to_datetime(df['date_end']).dt.date
+
+
 path='/home/emirs/blocking-research/'
 df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'),index=False)
 
 pd.set_option('display.max_columns', None)
 # print(df)
-# print(df.info())
-# print(df.describe())
+print(df.info())
+#print(df.describe())
 
 #sns.lineplot(x='blocking_year',y='block_intensity',data=df)
 #plt.savefig('plot0.png')
