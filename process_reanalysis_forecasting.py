@@ -19,11 +19,17 @@ for i in range(delta.days + 1):
 for date in dates:
     print(f"date: {date}")
     f_nc = nc.Dataset(f'./american_reanalysis_data/hgt.{date.year}.nc')
+    #print(f_nc.dimensions)
+    latbounds = [15,90]
+    lats = f_nc.variables['lat'][:]
+    lat_lower_index = np.argmin(np.abs(lats - latbounds[0]))
+    lat_upper_index = np.argmin(np.abs(lats-latbounds[1]))
+    f_nc= f_nc[: , lat_lower_index:lat_upper_index, 5 , :]
     times = num2date(f_nc["time"][:], f_nc["time"].units)
     times = [t.isoformat() for t in times]
     times = [datetime.datetime.strptime(t, "%Y-%m-%dT%H:%M:%S") for t in times]
     t_idx = times.index(date)
     hgt_array_event = f_nc["hgt"][t_idx,:,:,:].filled(fill_value=0)
-    event_array_file_path = f"./reanalysis_data_forecasting_processed/{date.year}-{date.month}-{date.day}.npy"
+    event_array_file_path = f"./reanalysis_data_forecasting_processed_cropped/{date.year}-{date.month}-{date.day}.npy"
     print(f"saveing data for day to: {event_array_file_path}")
     np.save(event_array_file_path, hgt_array_event)

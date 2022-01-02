@@ -74,8 +74,9 @@ df['date_begin'] = pd.to_datetime(df["date_begin"])
 for i in df.index:
     df.loc[i, 'date_end'] = df.loc[i,'date_begin'] + timedelta(days=df.loc[i,'length_days'])
 
-df['date_end'] = pd.to_datetime(df['date_end']).dt.date
-
+df['date_end'] = pd.to_datetime(df['date_end'])
+df['date_end'] = df['date_end'].dt.strftime('%Y-%-m-%-d')
+df['date_end'] = pd.to_datetime(df['date_end'])
 
 path='/home/emirs/blocking-research/'
 df.to_csv(os.path.join(path,r'preprocessed_blocking_data.csv'),index=False)
