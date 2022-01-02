@@ -20,6 +20,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.neural_network import MLPRegressor 
 
 from sklearn.metrics import mean_absolute_error as MAE 
+from sklearn.metrics import accuracy_score
 
 import matplotlib.pyplot as plt
 import seaborn as sns 
@@ -108,6 +109,8 @@ y_test_predicted = model.predict(x_reanalysis_data_hog_test_scaled)
 
 mae_train = MAE(y_train_predicted, y_data_train)
 mae_test = MAE(y_test_predicted, y_data_test)
+
+accuracy_train= accuracy_score(y_train_predicted, y_data_)
 
 print(f"MAE Train: {mae_train}")
 print(f"MAE Test: {mae_test}")
