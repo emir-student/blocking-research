@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from skimage.feature import hog
 from sklearn.model_selection import train_test_split
+import os
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler
@@ -10,6 +11,8 @@ from sklearn.preprocessing import Normalizer
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import MaxAbsScaler
+
+import xgboost
 
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.svm import SVR
@@ -83,21 +86,22 @@ x_reanalysis_data_hog_test_scaled = scaler.transform(x_reanalysis_data_hog_test)
 #model = LinearRegression()
 #model = Ridge(alpha=1, random_state=0)
 #model = Lasso(alpha=1, random_state=0)
-#model = SVR(kernel='rbf')
-#model = GradientBoostingRegressor(random_state=0)       # Each tree feeds into the next, hoping to improve results. 
-#model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
-
-model=MLPRegressor(hidden_layer_sizes=(256,128,64),
-                    activation='relu',
-                   solver='adam',
-                   batch_size=128,
-                   learning_rate_init=1e-3,
-                   max_iter=200,
-                   verbose=True,
-                   alpha=1e-3)
+#model = SVR(kernel='rbf', verbose=1)
+#model = GradientBoostingRegressor(random_state=0, n_estimators=100, verbose=11)       # Each tree feeds into the next, hoping to improve results. 
+model = RandomForestRegressor(random_state=0)             # Takes average of a bunch of decision trees.
+#model = xgboost.XGBRegressor(n_estimators= 200, verbosity= 2, max_depth=6, gamma=5)
+#model=MLPRegressor(hidden_layer_sizes=(256,128,64),
+                    #activation='relu',
+                    #solver='adam',
+                    #batch_size=128,
+                    #learning_rate_init=1e-3,
+                    #max_iter=200,
+                    #verbose=True,
+                    #alpha=1e-3)
 
 
 model.fit(x_reanalysis_data_hog_train_scaled, y_data_train)
+#model.fit(x_reanalysis_data_hog_train_scaled, y_data_train)
 r2_train = model.score(x_reanalysis_data_hog_train_scaled, y_data_train)
 r2_test = model.score(x_reanalysis_data_hog_test_scaled, y_data_test)
 
@@ -110,13 +114,25 @@ y_test_predicted = model.predict(x_reanalysis_data_hog_test_scaled)
 mae_train = MAE(y_train_predicted, y_data_train)
 mae_test = MAE(y_test_predicted, y_data_test)
 
-accuracy_train= accuracy_score(y_train_predicted, y_data_)
-
 print(f"MAE Train: {mae_train}")
-print(f"MAE Test: {mae_test}")
+print(f"MAE Test: {mae_test}") 
 
-error_train= y_train_predicted - y_data_train 
-error_test= y_test_predicted - y_data_test
+mape_train = np.average( np.abs( (y_train_predicted - y_data_train) /y_data_train ) )
+mape_test = np.average( np.abs( (y_test_predicted - y_data_test) /y_data_test) )
 
-sns.displot([error_train,error_test], kind='kde')
-plt.savefig('model_error.png')
+print(f"MAPE Train: {mape_train}")
+print(f"MAPE Test: {mape_test}") 
+
+t_test_dataset = pd.DataFrame()
+t_test_dataset['y_test_predicted'] = y_test_predicted
+t_test_dataset['y_test_actual'] = y_data_test
+
+path = '/home/emirs/blocking-research/'
+t_test_dataset.to_csv(os.path.join(path,r't_test_dataset.csv'),index=False)
+
+
+# error_train= y_train_predicted - y_data_train 
+# error_test= y_test_predicted - y_data_test
+
+# sns.displot([error_train,error_test], kind='kde')
+# plt.savefig('model_error.png')

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
+import os
 
 import torch
 from torch import random
@@ -62,26 +63,32 @@ class ConvModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv = nn.Sequential(nn.Conv2d(17, 32, 3, padding="same"),
-                                  nn.ReLU(),
+                                  nn.LeakyReLU(),
                                   nn.BatchNorm2d(32),
                                   nn.MaxPool2d(2,2), #kernel_size=2, stride=2, 32,64,128 -> 32,32,64
+                                  nn.Dropout2d(p=0.4),
                                   nn.Conv2d(32, 32, 3, padding="same"),
-                                  nn.ReLU(),
+                                  nn.LeakyReLU(),
                                   nn.BatchNorm2d(32),
                                   nn.MaxPool2d(2,2), # 32,32,64 -> 32,16,32
+                                  nn.Dropout2d(p=0.4),
                                   nn.Conv2d(32, 32, 3, padding="same"),
-                                  nn.ReLU(),
+                                  nn.LeakyReLU(),
                                   nn.BatchNorm2d(32),
-                                  nn.MaxPool2d(2,2)) #32,16,32 -> 32,8,16
+                                  nn.MaxPool2d(2,2),
+                                  nn.Dropout2d(p=0.1)
+                                  ) #32,16,32 -> 32,8,16
 
         self.mlp = nn.Sequential(nn.Linear(32*8*16,512), 
-                                 nn.ReLU(),
+                                 nn.LeakyReLU(),
                                  nn.BatchNorm1d(512),
+                                 nn.Dropout(p=0.1),
                                  nn.Linear(512,256),
-                                 nn.ReLU(),
+                                 nn.LeakyReLU(),
                                  nn.BatchNorm1d(256),
+                                 nn.Dropout(p=0.1),
                                  nn.Linear(256,64),
-                                 nn.ReLU(),
+                                 nn.LeakyReLU(),
                                  nn.BatchNorm1d(64),
                                  nn.Linear(64,1))
     
@@ -94,35 +101,58 @@ class ConvModel(nn.Module):
 model = ConvModel()
 print(model) 
 
+def MAPELoss(output, target):
+    return torch.mean(torch.abs((target - output) / target))
+
 loss_function = nn.L1Loss() #aka Mean Absolute Error
+loss_function_mape = MAPELoss
 optimizer= Adam(model.parameters(), lr = 1e-3)
 
 def train_step(data_loader):
     model.train()
     train_loss = 0
+    train_mape =  0
     for batch_idx, batch in enumerate(data_loader):
         ids, x, y = batch
         pred = model(x)
+
         loss = loss_function(pred, y)
+        mape = loss_function_mape(pred,y)
         train_loss = loss.item() + train_loss
+        train_mape= mape.item() + train_mape
+        
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
     train_loss = train_loss/len(data_loader)
+    train_mape = train_mape/len(data_loader)
     print(f"train_loss: {train_loss}")
+    print(f"train_mape: {train_mape}")
 
+
+t_test_dataset= pd.DataFrame()
 
 def test_step(data_loader):
     model.eval()
     test_loss = 0
+    test_mape = 0
     with torch.no_grad():
         for batch_idx, batch in enumerate(data_loader):
             ids, x, y = batch
             pred = model(x)
             loss = loss_function(pred, y)
-            test_loss= loss.item() + test_loss
+            mape = loss_function_mape(pred,y)
+            test_loss = loss.item() + test_loss
+            test_mape= mape.item() + test_mape
+            t_test_dataset['prediction'] = pd.Series(pred.flatten())
+            t_test_dataset['actual'] = pd.Series(y.flatten())
+            print(t_test_dataset)
+            path = '/home/emirs/blocking-research/'
+            t_test_dataset.to_csv(os.path.join(path,fr't_test_dataset_cnn_{batch_idx}.csv'),index=False)
     test_loss= test_loss/len(data_loader)
+    test_mape= test_mape/len(data_loader)
     print(f"test_loss: {test_loss}")
+    print(f"test_mape: {test_mape}")
         
 
 EPOCHS = 50
@@ -132,5 +162,9 @@ for i in range(EPOCHS):
     train_step(train_data_loader)
     test_step(test_data_loader)
     print()
+
+
+
+
 
     
