@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
 import os
-
 import torch
 from torch import random
 from torch.nn.modules.pooling import MaxPool2d
@@ -162,6 +161,7 @@ for i in range(EPOCHS):
     train_step(train_data_loader)
     test_step(test_data_loader)
     print()
+
 
 
 

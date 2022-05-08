@@ -113,22 +113,19 @@ y_test_predicted = model.predict(x_reanalysis_data_hog_test_scaled)
 
 mae_train = MAE(y_train_predicted, y_data_train)
 mae_test = MAE(y_test_predicted, y_data_test)
-
 print(f"MAE Train: {mae_train}")
 print(f"MAE Test: {mae_test}") 
-
 mape_train = np.average( np.abs( (y_train_predicted - y_data_train) /y_data_train ) )
 mape_test = np.average( np.abs( (y_test_predicted - y_data_test) /y_data_test) )
-
 print(f"MAPE Train: {mape_train}")
 print(f"MAPE Test: {mape_test}") 
 
-t_test_dataset = pd.DataFrame()
-t_test_dataset['y_test_predicted'] = y_test_predicted
-t_test_dataset['y_test_actual'] = y_data_test
+error_dataset = pd.DataFrame()
+error_dataset['y_test_predicted'] = y_test_predicted
+error_dataset['y_test_actual'] = y_data_test
 
 path = '/home/emirs/blocking-research/'
-t_test_dataset.to_csv(os.path.join(path,r't_test_dataset.csv'),index=False)
+error_dataset.to_csv(os.path.join(path,r'error.csv'),index=False)
 
 
 # error_train= y_train_predicted - y_data_train 
